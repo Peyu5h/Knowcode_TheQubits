@@ -209,6 +209,7 @@ export default function RootLayout() {
             ),
           }}
         />
+        <Tabs.Screen name="travel" options={{ href: null, headerShown: false }} />
       </Tabs>
       <PortalHost />
     </View>

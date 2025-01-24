@@ -130,34 +130,6 @@ export default function SearchBoxPlan({ onLocationSelect, MAPBOX_ACCESS_TOKEN }:
           placeholder="Search destinations"
           className="placeholder:text-gray-500"
         />
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              className="h-12 w-12 bg-background border border-border"
-              variant="default"
-              size="icon"
-            >
-              <View>
-                <Settings2 color="gray" className="h-12 w-12 text-white bg-white" />
-              </View>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent portalHost="dropdown" className="w-48 border border-foreground/10">
-            <DropdownMenuLabel>Filter By</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              {['Popular', 'Recent', 'Rating', 'Distance'].map((option) => (
-                <DropdownMenuItem
-                  key={option}
-                  onPress={() => console.log(option)}
-                  className="flex-row items-center py-2 border-b border-foreground/10"
-                >
-                  <Text className="text-foreground px-2 py-4">{option}</Text>
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
       </View>
 
       {toAddressList.length > 0 && (

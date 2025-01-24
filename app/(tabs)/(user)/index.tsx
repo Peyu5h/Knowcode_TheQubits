@@ -95,7 +95,7 @@ const DestinationCard = ({ destination, onPress }: { destination: any; onPress: 
 
         <View className="absolute top-3 right-3">
           <Pressable className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-md items-center justify-center">
-            <Heart size={18} className="text-white" />
+            <Heart color="white" size={12} />
           </Pressable>
         </View>
 
@@ -154,7 +154,7 @@ export default function Index() {
 
     if (searchQuery && searchResults.length > 0) {
       return (
-        <View className="space-y-4">
+        <View className="space-y-4 mt-4">
           <View className="flex-row justify-between items-center mb-4">
             <Text className="text-2xl font-semibold">Results for "{searchQuery}"</Text>
             <Pressable
@@ -225,7 +225,7 @@ export default function Index() {
             backgroundImage: 'linear-gradient(135deg, rgba(0,0,0,0.8) 0%, transparent 100%)',
           }}
         />
-        <View className="absolute  left-4 right-4 top-1/2 -translate-y-1/2 mt-4">
+        <View className="absolute left-4 right-4 top-2  mt-4">
           <SearchBox
             onLocationSelect={handleLocationSelect}
             MAPBOX_ACCESS_TOKEN={MAPBOX_ACCESS_TOKEN}

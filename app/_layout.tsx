@@ -105,7 +105,6 @@ export default function RootLayout() {
     <ToastProvider>
       <GestureHandlerRootView>
         <AuthContext.Provider value={authContext}>
-          <StatusBar barStyle="light-content" />
           <ReactQueryProvider>
             <Stack
               screenOptions={{
