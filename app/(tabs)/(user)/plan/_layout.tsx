@@ -26,6 +26,12 @@ export default function RootLayout() {
           headerShown: false,
         }}
       />
+      <Stack.Screen
+        name="attraction"
+        options={{
+          headerShown: false,
+        }}
+      />
       <PortalHost />
     </Stack>
   );

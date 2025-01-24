@@ -16,3 +16,23 @@ export interface TransportData {
   eco?: boolean;
   eco_price?: number;
 }
+
+export interface HotelCardProps {
+  hotel: {
+    id: string;
+    hotelName: string;
+    rating: number;
+    pricePerNight: number;
+    images: string[];
+    city: string;
+    address: string;
+    amenities: string[];
+    ecofriendly_certificates: string[];
+    eco: number;
+    air_conditioned: boolean;
+    co2emission: number;
+  };
+  isHighestEcoScore: boolean;
+  onSelect: () => void;
+  isSelected: boolean;
+}

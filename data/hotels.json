@@ -1,0 +1,86 @@
+[
+  {
+    "totalco2": 2,
+    "hotels": [
+      {
+        "_id": "67148837979ac9a06912a9d2",
+        "price_per_night": 6000,
+        "hotel_name": "Capital Green Luxury",
+        "ecofriendly_certificates": ["LEED Gold", "Green Key"],
+        "city": "Delhi",
+        "address": "12 Connaught Place, New Delhi 110001",
+        "amenities": [
+          "Infinity Pool",
+          "Spa",
+          "Multiple Restaurants",
+          "Fitness Center"
+        ],
+        "reviews": [
+          "Luxurious and eco-conscious, but service was inconsistent.",
+          "Impressive green initiatives, especially waste management.",
+          "Bit overpriced, but the sustainable luxury experience was unique."
+        ],
+        "image_index": 1,
+        "air_conditioned": true,
+        "co2emission": 1,
+        "eco": 0.9,
+        "coordinates": {
+          "latitude": 28.6139,
+          "longitude": 77.209
+        }
+      },
+      {
+        "_id": "67148837979ac9a06912a9dc",
+        "price_per_night": 5500,
+        "hotel_name": "Diplomatic Green Enclave",
+        "ecofriendly_certificates": ["LEED Platinum"],
+        "city": "Delhi",
+        "address": "7 Diplomatic Enclave, Chanakyapuri, New Delhi 110021",
+        "amenities": [
+          "Diplomatic Concierge",
+          "International Restaurants",
+          "Helipad"
+        ],
+        "reviews": [
+          "Top-notch security and eco-credentials, perfect for VIPs.",
+          "Impressive green technology, but felt a bit too exclusive.",
+          "Luxurious and sustainable, though prices were eye-watering."
+        ],
+        "image_index": 2,
+        "air_conditioned": true,
+        "co2emission": 0.8,
+        "eco": 0.9,
+        "coordinates": {
+          "latitude": 28.6139,
+          "longitude": 77.209
+        }
+      },
+      {
+        "_id": "67148837979ac9a06912a9e6",
+        "price_per_night": 5800,
+        "hotel_name": "Lutyens' Eco Bungalow",
+        "ecofriendly_certificates": ["GRIHA 5 Star"],
+        "city": "Delhi",
+        "address": "11 Aurangzeb Road, New Delhi 110011",
+        "amenities": [
+          "Heritage Walking Tours",
+          "Diplomatic High Tea",
+          "Organic Kitchen Garden"
+        ],
+        "reviews": [
+          "Elegant fusion of colonial architecture and modern eco-practices.",
+          "Loved the historic ambiance, but some eco-features needed explanation.",
+          "Exquisite experience, though priced for the diplomatic crowd."
+        ],
+        "image_index": 6,
+        "air_conditioned": true,
+        "co2emission": 0.7,
+        "eco": 0.9,
+        "coordinates": {
+          "latitude": 28.6139,
+          "longitude": 77.209
+        }
+      }
+    ]
+  }
+]

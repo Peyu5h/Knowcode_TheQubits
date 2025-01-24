@@ -28,7 +28,6 @@ export const dummyFlights = [
     airlineLogo:
       'https://static-assets-ct.flixcart.com/ct/assets/resources/images/logos/air-logos/svg_logos/AI.svg',
   },
-  // Add more flight entries...
 ];
 
 export const dummyTrains = [
@@ -62,7 +61,6 @@ export const dummyTrains = [
     departureStation: 'Chennai Central (MAS)',
     arrivalStation: 'Bangalore City (SBC)',
   },
-  // Add more train entries...
 ];
 
 export const dummyBuses = [
@@ -95,7 +93,6 @@ export const dummyBuses = [
     eco: false,
     busType: 'A/C Seater',
   },
-  // Add more bus entries...
 ];
 
 export const dummyCars = [
@@ -126,10 +123,8 @@ export const dummyCars = [
     fuel: 'petrol',
     eco: false,
   },
-  // Add more car entries...
 ];
 
-// Helper function to calculate CO2 emissions
 export const calculateCO2 = (type: string, distance: number, isEco: boolean): number => {
   const emissionFactors = {
     flight: 0.255, // kg CO2 per km
@@ -140,10 +135,9 @@ export const calculateCO2 = (type: string, distance: number, isEco: boolean): nu
 
   const factor = emissionFactors[type as keyof typeof emissionFactors] || 0;
   const emission = distance * factor;
-  return isEco ? emission * 0.8 : emission; // 20% reduction for eco-friendly options
+  return isEco ? emission * 0.8 : emission;
 };
 
-// Add CO2 emissions to all entries
 export const getAllTransportData = () => {
   const flights = dummyFlights.map((flight) => ({
     ...flight,
@@ -167,3 +161,84 @@ export const getAllTransportData = () => {
 
   return { flights, trains, buses, cars };
 };
+
+export const hotelImages = [
+  'https://res.cloudinary.com/dv349glug/image/upload/w_1000,ar_1:1,c_fill,g_auto,e_art:hokusai/v1729397242/1_xnkb31.webp',
+  'https://res.cloudinary.com/dv349glug/image/upload/w_1000,ar_1:1,c_fill,g_auto,e_art:hokusai/v1729397242/2_qzj5qw.webp',
+  'https://res.cloudinary.com/dv349glug/image/upload/w_1000,ar_1:1,c_fill,g_auto,e_art:hokusai/v1729397243/3_gkw7r7.webp',
+  'https://res.cloudinary.com/dv349glug/image/upload/w_1000,ar_1:1,c_fill,g_auto,e_art:hokusai/v1729397242/4_wbdq9h.webp',
+  'https://res.cloudinary.com/dv349glug/image/upload/w_1000,ar_1:1,c_fill,g_auto,e_art:hokusai/v1729397244/5_s1vfgc.webp',
+  'https://res.cloudinary.com/dv349glug/image/upload/w_1000,ar_1:1,c_fill,g_auto,e_art:hokusai/v1729397242/6_a4i6f6.webp',
+];
+
+export const dummyHotels = [
+  {
+    id: 'h1',
+    hotelName: 'Luxury Green Resort',
+    rating: 9.2,
+    pricePerNight: 8500,
+    images: hotelImages,
+    city: 'Delhi',
+    address: '123 Green Avenue, New Delhi',
+    amenities: [
+      'Infinity Pool',
+      'Spa Center',
+      'Organic Restaurant',
+      'Fitness Center',
+      'Electric Car Charging',
+    ],
+
+    ecofriendly_certificates: ['LEED Platinum', 'Green Globe'],
+    air_conditioned: true,
+    co2emission: 0.5,
+    eco: 0.95,
+    coordinates: {
+      latitude: 28.6139,
+      longitude: 77.209,
+    },
+  },
+  {
+    id: 'h2',
+    hotelName: 'Urban Eco Hotel',
+    rating: 8.8,
+    pricePerNight: 6500,
+    images: hotelImages,
+    city: 'Delhi',
+    address: '456 City Center, New Delhi',
+    amenities: ['Rooftop Garden', 'Yoga Studio', 'Vegan Café', 'Business Center', 'Solar Powered'],
+
+    ecofriendly_certificates: ['LEED Gold'],
+    air_conditioned: true,
+    co2emission: 0.6,
+    eco: 0.85,
+    coordinates: {
+      latitude: 28.6329,
+      longitude: 77.219,
+    },
+  },
+  {
+    id: 'h3',
+    hotelName: 'Sustainable Suites',
+    rating: 9.0,
+    pricePerNight: 7500,
+    images: hotelImages,
+    city: 'Delhi',
+    address: '789 Green Park, New Delhi',
+    amenities: [
+      'Rainwater Harvesting',
+      'Organic Garden',
+      'Eco-friendly Spa',
+      'Green Gym',
+      'Recycling Program',
+    ],
+
+    ecofriendly_certificates: ['LEED Platinum', 'Green Key'],
+    air_conditioned: true,
+    co2emission: 0.55,
+    eco: 0.92,
+    coordinates: {
+      latitude: 28.6429,
+      longitude: 77.229,
+    },
+  },
+];
