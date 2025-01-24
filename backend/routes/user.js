@@ -15,19 +15,19 @@ router.get('/', async (req, res) => {
 });
 
 router.post('/login', async (req, res) => {
+    
+    const client = new MongoClient(uri, {
+        serverApi: {
+            version: ServerApiVersion.v1,
+            strict: true,
+            deprecationErrors: true,
+        }
+    });
     try {
         const { email, password } = req.body;
-        const client = new MongoClient(uri, {
-            serverApi: {
-                version: ServerApiVersion.v1,
-                strict: true,
-                deprecationErrors: true,
-            }
-        });
         const db = client.db("ecovoyage");
         const coll = db.collection("users");  
         const user = await coll.findOne({ email, password });
-        await client.close();
         if (!user) {
             res.status(401).json({
                 success: false,
@@ -38,7 +38,7 @@ router.post('/login', async (req, res) => {
             res.status(200).json({
                 success: true,
                 message: 'Login successful',
-                user,
+                result: user,
             });
         }
     } catch (e) {
@@ -46,6 +46,8 @@ router.post('/login', async (req, res) => {
             success: false,
             message: e.toString(),
         });
+    } finally {
+        await client.close();
     }
 });
 
@@ -69,6 +71,8 @@ router.post('/signUp', async (req, res) => {
             gender,
             age
         };
+        const existing = await coll.findOne({ email });
+        if(existing) return;
         const result = await coll.insertOne(user);
         res.status(200).json({
             success: true,
