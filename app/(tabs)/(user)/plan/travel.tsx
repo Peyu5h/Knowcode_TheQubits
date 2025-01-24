@@ -56,6 +56,8 @@ const Travel = () => {
             <ArrowLeft color="white" size={20} />
           </Button>
 
+          <Text className="text-white text-xl font-semibold">Select Transport</Text>
+
           <Button
             disabled={!selectedTransport}
             onPress={() => {
@@ -72,6 +74,7 @@ const Travel = () => {
       <ScrollView style={{ paddingTop: 80 }} className="flex-1 p-4 ">
         <Text className="text-lg font-semibold mb-2">Flights</Text>
         {flights.map((flight, index) => (
+          // @ts-ignore
           <FlightCard
             key={`flight-${index}`}
             {...flight}
@@ -82,6 +85,8 @@ const Travel = () => {
 
         <Text className="text-lg font-semibold mb-2 mt-6">Trains</Text>
         {trains.map((train, index) => (
+          // @ts-ignore
+
           <TrainCard
             key={`train-${index}`}
             {...train}
@@ -92,6 +97,8 @@ const Travel = () => {
 
         <Text className="text-lg font-semibold mb-2 mt-6">Buses</Text>
         {buses.map((bus, index) => (
+          // @ts-ignore
+
           <BusCard
             key={`bus-${index}`}
             {...bus}
@@ -102,6 +109,8 @@ const Travel = () => {
 
         <Text className="text-lg font-semibold mb-2 mt-6">Cars</Text>
         {cars.map((car, index) => (
+          // @ts-ignore
+
           <CarCard
             key={`car-${index}`}
             {...car}

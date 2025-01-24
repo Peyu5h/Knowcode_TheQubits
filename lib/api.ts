@@ -16,16 +16,16 @@ interface ValidationError {
 interface APIErrorResponse {
   success: boolean;
   error?: ValidationError[];
-  data?: unknown;
+  result?: unknown;
 }
 
 interface ApiResponse<T = unknown> {
-  status?: boolean;
+  success?: boolean;
   message?: string;
-  data?: T;
+  result?: T;
 }
 
-const apiUrl = 'https://saikrupa.peyu5h.tech/';
+const apiUrl = 'https://d7e9-106-219-56-51.ngrok-free.app';
 console.log(apiUrl);
 
 const createInstance = () => {
@@ -46,14 +46,14 @@ const api = {
     return response;
   },
 
-  post: async <T>(url: string, data?: unknown): Promise<ApiResponse<T>> => {
+  post: async <T>(url: string, result?: unknown): Promise<ApiResponse<T>> => {
     const cleanUrl = url.replace(/^\//, '');
-    return await instance.post(cleanUrl, { json: data }).json<ApiResponse<T>>();
+    return await instance.post(cleanUrl, { json: result }).json<ApiResponse<T>>();
   },
 
-  put: async <T>(url: string, data?: unknown): Promise<ApiResponse<T>> => {
+  put: async <T>(url: string, result?: unknown): Promise<ApiResponse<T>> => {
     const cleanUrl = url.replace(/^\//, '');
-    return await instance.put(cleanUrl, { json: data }).json<ApiResponse<T>>();
+    return await instance.put(cleanUrl, { json: result }).json<ApiResponse<T>>();
   },
 
   delete: async <T>(url: string): Promise<ApiResponse<T>> => {

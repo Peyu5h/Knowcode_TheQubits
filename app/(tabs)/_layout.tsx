@@ -18,6 +18,8 @@ export default function RootLayout() {
         name="(hotel)"
         options={{
           headerShown: false,
+          statusBarStyle: 'dark',
+          statusBarHidden: true,
         }}
       />
       <Stack.Screen

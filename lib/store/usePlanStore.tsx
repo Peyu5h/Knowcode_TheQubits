@@ -35,6 +35,16 @@ interface Passenger {
   idNumber?: string;
 }
 
+interface User {
+  _id: string;
+  name: string;
+  email: string;
+  phone: string;
+  gender: string;
+  age: number;
+  password: string;
+}
+
 interface TravelPlan {
   id: string;
   name?: string;
@@ -53,6 +63,11 @@ interface TravelPlan {
 
 interface PlanStore {
   currentPlan: TravelPlan;
+  user: User | null;
+
+  setUser: (user: User) => void;
+  getUser: () => User | null;
+  clearUser: () => void;
 
   addLocation: (location: Location) => void;
   removeLocation: (locationId: string) => void;
@@ -85,6 +100,12 @@ export const usePlanStore = create<PlanStore>()(
     persist(
       (set, get) => ({
         currentPlan: initialState,
+        user: null,
+
+        setUser: (user) => set({ user }),
+        getUser: () => get().user,
+
+        clearUser: () => set({ user: null }),
 
         addLocation: (location) =>
           set((state) => ({
@@ -224,9 +245,8 @@ export const usePlanStore = create<PlanStore>()(
         name: 'travel-plan-storage',
         storage: createJSONStorage(() => AsyncStorage),
         partialize: (state) => ({
-          currentPlan: {
-            ...state.currentPlan,
-          },
+          currentPlan: state.currentPlan,
+          user: state.user,
         }),
       }
     )

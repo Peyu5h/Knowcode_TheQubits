@@ -8,7 +8,7 @@ const driver = () => {
     // <View className="flex-1 items-center justify-center bg-background">
     //   <Text>Driver</Text>
     // </View>
-    <Redirect href={'/(tabs)/(user)/plan/travel'} />
+    <Redirect href={'/(tabs)/(user)'} />
   );
 };
 

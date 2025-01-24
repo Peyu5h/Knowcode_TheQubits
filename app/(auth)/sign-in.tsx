@@ -9,6 +9,9 @@ import { Label } from '~/components/ui/label';
 // import { useToast } from '~/components/ui/toast';
 import { Link, router, useRouter } from 'expo-router';
 import { useAuth } from '~/app/_layout';
+import api from '~/lib/api';
+import { useToast } from '~/components/ui/toast';
+import { usePlanStore } from '~/lib/store/usePlanStore';
 
 const signInSchema = Yup.object().shape({
   email: Yup.string().email('Invalid email').required('Email is required'),
@@ -16,8 +19,10 @@ const signInSchema = Yup.object().shape({
 });
 
 export default function SignIn() {
-  //   const { toast } = useToast();
+  const { toast } = useToast();
   const { signIn } = useAuth();
+  const setUser = usePlanStore((state) => state.setUser);
+  const router = useRouter();
 
   const formik = useFormik({
     initialValues: {
@@ -25,28 +30,38 @@ export default function SignIn() {
       password: '',
     },
     validationSchema: signInSchema,
-    onSubmit: (values) => {
-      console.log('Sign in:', values);
+    onSubmit: async (values) => {
+      try {
+        const response = await api.post('user/login', {
+          email: values.email,
+          password: values.password,
+        });
 
-      const mockUserType = values.email.includes('hotel')
-        ? 'hotel'
-        : values.email.includes('driver')
-          ? 'driver'
-          : 'regular';
-
-      console.log('User type:', mockUserType);
-
-      signIn(mockUserType);
-
-      //   toast({ title: 'Success', description: 'Signed in successfully!' });
+        if (response.success) {
+          setUser(response.result as any);
+          signIn('regular');
+          router.replace('/(tabs)/(user)');
+        } else {
+          toast({
+            title: 'Error',
+            variant: 'destructive',
+            description: 'Invalid email or password',
+          });
+        }
+      } catch (error) {
+        toast({
+          title: 'Error',
+          variant: 'destructive',
+          description: 'Invalid email or password',
+        });
+        console.log('Sign in error:', error);
+      }
     },
   });
 
-  const router = useRouter();
-
   return (
     <ScrollView className="flex-1 bg-background p-4">
-      <Text className="text-2xl font-bold text-center mb-6">Sign In</Text>
+      <Text className="text-2xl font-bold text-center mb-6">Sign I</Text>
 
       <View className="gap-4">
         <View>
