@@ -1,7 +1,7 @@
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import * as React from 'react';
-import { ScrollView, View } from 'react-native';
+import { ActivityIndicator, ScrollView, View } from 'react-native';
 import { Button } from '~/components/ui/button';
 import { Input } from '~/components/ui/input';
 import { Text } from '~/components/ui/text';
@@ -23,6 +23,7 @@ export default function SignIn() {
   const { signIn } = useAuth();
   const setUser = usePlanStore((state) => state.setUser);
   const router = useRouter();
+  const [loading, setLoading] = React.useState(false);
 
   const formik = useFormik({
     initialValues: {
@@ -31,6 +32,7 @@ export default function SignIn() {
     },
     validationSchema: signInSchema,
     onSubmit: async (values) => {
+      setLoading(true);
       try {
         const response = await api.post('user/login', {
           email: values.email,
@@ -55,13 +57,15 @@ export default function SignIn() {
           description: 'Invalid email or password',
         });
         console.log('Sign in error:', error);
+      } finally {
+        setLoading(false);
       }
     },
   });
 
   return (
     <ScrollView className="flex-1 bg-background p-4">
-      <Text className="text-2xl font-bold text-center mb-6">Sign I</Text>
+      <Text className="text-2xl font-bold text-center mb-6">Sign In</Text>
 
       <View className="gap-4">
         <View>
@@ -87,8 +91,10 @@ export default function SignIn() {
           {formik.errors.password && <Text className="text-red-500">{formik.errors.password}</Text>}
         </View>
 
-        <Button onPress={() => formik.handleSubmit()}>
-          <Text className="text-primary-foreground">Sign In</Text>
+        <Button onPress={() => formik.handleSubmit()} disabled={loading}>
+          <Text className="text-primary-foreground">
+            {loading ? <ActivityIndicator color="#fff" /> : 'Sign In'}
+          </Text>
         </Button>
       </View>
       <Button variant={'outline'} className="mt-4" onPress={() => router.push('/(auth)/sign-up')}>

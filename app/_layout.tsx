@@ -64,11 +64,18 @@ function RootLayoutNav() {
     <AuthContext.Provider value={authContext}>
       <View className={cn('flex-1', isDarkColorScheme ? 'dark' : '')}>
         {!user ? (
-          <Stack screenOptions={{ headerShown: false }}>
+          <Stack screenOptions={{ headerShown: false, statusBarHidden: true }}>
             <Stack.Screen name="(auth)" options={{ headerShown: false }} />
           </Stack>
         ) : (
-          <Stack screenOptions={{ headerShown: false }}>
+          <Stack
+            screenOptions={{
+              headerShown: false,
+              statusBarStyle: 'light',
+              statusBarBackgroundColor: '#0c0a09',
+              // statusBarTranslucent: true,
+            }}
+          >
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           </Stack>
         )}

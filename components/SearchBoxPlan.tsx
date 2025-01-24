@@ -106,7 +106,7 @@ export default function SearchBoxPlan({ onLocationSelect, MAPBOX_ACCESS_TOKEN }:
 
     if (address.coordinates) {
       const [longitude, latitude] = address.coordinates;
-      onLocationSelect(latitude, longitude, [], addressText);
+      onLocationSelect(latitude, longitude, [], address.place_formatted || address.name || '');
     }
   };
 
@@ -134,16 +134,15 @@ export default function SearchBoxPlan({ onLocationSelect, MAPBOX_ACCESS_TOKEN }:
 
       {toAddressList.length > 0 && (
         <View style={styles.resultsContainer}>
-          <FlatList
-            style={styles.resultsList}
-            data={toAddressList.filter((item) => item?.name || item?.full_address)}
-            keyExtractor={(_, index) => index.toString()}
-            renderItem={({ item }) => {
+          {toAddressList
+            .filter((item) => item?.name || item?.full_address)
+            .map((item, index) => {
               const mainText = item.name || item.place_formatted || '';
               const subText = item.place_formatted !== mainText ? item.place_formatted : '';
 
               return (
                 <TouchableOpacity
+                  key={index}
                   style={styles.resultItem}
                   onPress={() => handleToAddressClick(item)}
                   activeOpacity={0.7}
@@ -154,8 +153,7 @@ export default function SearchBoxPlan({ onLocationSelect, MAPBOX_ACCESS_TOKEN }:
                   </View>
                 </TouchableOpacity>
               );
-            }}
-          />
+            })}
         </View>
       )}
     </View>
@@ -220,12 +218,11 @@ const styles = StyleSheet.create({
     borderColor: '#fff',
     borderRadius: 8,
     borderWidth: 0.2,
+    maxHeight: 200,
     elevation: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
-    borderBottomColor: '#fff',
-    borderBottomWidth: 0.5,
   },
 });

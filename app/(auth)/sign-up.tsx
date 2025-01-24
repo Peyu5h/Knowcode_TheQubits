@@ -20,6 +20,7 @@ import { useAuth } from '~/app/_layout';
 import { useToast } from '~/components/ui/toast';
 import { usePlanStore } from '~/lib/store/usePlanStore';
 import api from '~/lib/api';
+import { ActivityIndicator } from 'react-native';
 
 type UserType = 'regular' | 'hotel' | 'driver';
 
@@ -64,6 +65,7 @@ export default function SignUp() {
   const { signIn } = useAuth();
   const setUser = usePlanStore((state) => state.setUser);
   const [activeTab, setActiveTab] = React.useState('regular');
+  const [loading, setLoading] = React.useState(false);
 
   const regularUserForm = useFormik<RegularUserForm>({
     initialValues: {
@@ -76,6 +78,7 @@ export default function SignUp() {
     },
     validationSchema: regularUserSchema,
     onSubmit: async (values) => {
+      setLoading(true);
       try {
         const response = await api.post('user/signUp', {
           name: values.name,
@@ -104,6 +107,8 @@ export default function SignUp() {
           description: 'Failed to create account',
         });
         console.error('Sign up error:', error);
+      } finally {
+        setLoading(false);
       }
     },
   });
@@ -200,8 +205,10 @@ export default function SignUp() {
           )}
         </View>
 
-        <Button onPress={() => regularUserForm.handleSubmit()}>
-          <Text className="text-primary-foreground">Sign Up</Text>
+        <Button onPress={() => regularUserForm.handleSubmit()} disabled={loading}>
+          <Text className="text-primary-foreground">
+            {loading ? <ActivityIndicator color="#fff" /> : 'Sign Up'}
+          </Text>
         </Button>
       </View>
     </ScrollView>
