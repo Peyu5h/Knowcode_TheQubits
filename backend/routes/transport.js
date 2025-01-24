@@ -71,14 +71,12 @@ router.post('/find', async (req, res) => {
             return b.matchScore - a.matchScore || a.distance - b.distance;
         })
         .slice(0, 3);
-        console.log(result);
-        console.log(finalResults);
-        await scrapeFlights(`https://www.cleartrip.com/flights/international/results?adults=${passengers}&childs=0&infants=0&class=Economy&depart_date=${formatDate(startDate)}&from=${result[0].IATA}&to=${finalResults[0].IATA}`);
+        const flights = await scrapeFlights(`https://www.cleartrip.com/flights/international/results?adults=${passengers}&childs=0&infants=0&class=Economy&depart_date=${formatDate(startDate)}&from=${result[0].IATA}&to=${finalResults[0].IATA}`);
         await client.close();
         res.status(200).json({
             success: true,
             message: 'Find successful',
-            user: req.body,
+            result: flights,
         });
     } catch (e) {
         res.status(500).json({
@@ -96,11 +94,19 @@ function formatDate(isoString) {
     const year = date.getUTCFullYear();
     
     return `${day}/${month}/${year}`;
-  }
+}
   
 
-  async function scrapeFlights(url) {
-    const browser = await puppeteer.launch({ headless: "new" });
+async function scrapeFlights(url) {
+    const browser = await puppeteer.launch({ headless: "new",   args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-accelerated-2d-canvas',
+        '--disable-gpu',
+        '--disable-features=IsolateOrigins,site-per-process',
+        '--blink-settings=imagesEnabled=false' 
+      ], });
     const page = await browser.newPage();
     await page.goto(url, { waitUntil: "domcontentloaded" });
     await page.waitForSelector(".intl-grid-template");
@@ -146,9 +152,57 @@ function formatDate(isoString) {
             };
         });
     });
-
-    console.log(flights);
     await browser.close();
+    return flights;
+}
+
+async function scrapeBuses(from, to, date) {
+    const browser = await puppeteer.launch({ headless: "new", args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-accelerated-2d-canvas',
+        '--disable-gpu',
+        '--disable-features=IsolateOrigins,site-per-process',
+        '--blink-settings=imagesEnabled=false' 
+      ],});
+  const page = await browser.newPage();
+  
+  await page.setUserAgent(
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36"
+  );
+    await page.goto('https://www.redbus.in/bus-tickets/mumbai-to-delhi?fromCityName=Mumbai&toCityName=Delhi&onward=28-Jan-2025&opId=0&busType=Any');
+
+    const redirectedUrl = page.url();
+    const urlObj = new URL(redirectedUrl);
+    const params = urlObj.searchParams;
+    const convertISODate = (iso) => {
+        const date = new Date(iso);
+        const day = String(date.getUTCDate()).padStart(2, '0');
+        const month = date.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' });
+        return `${day}-${month}-${date.getUTCFullYear()}`;
+    };
+    const newOnwardDate = convertISODate("2025-01-28T16:14:34.818Z");
+    params.set('onward', newOnwardDate);
+    const updatedUrl = urlObj.toString();
+    await page.goto(updatedUrl, { waitUntil: 'networkidle2' });
+    await page.waitForSelector('.row-sec.clearfix');
+
+    const buses = await page.$$eval('.row-sec.clearfix', (busElements) => {
+      return busElements.map(bus => {
+        return {
+          name: bus.querySelector('.travels').innerText.trim(),
+          type: bus.querySelector('.bus-type').innerText.trim(),
+          departureTime: bus.querySelector('.dp-time').innerText.trim(),
+          arrivalTime: bus.querySelector('.bp-time').innerText.trim(),
+          arrivalDate: bus.querySelector('.next-day-dp-lbl').innerText.trim(),
+          journeyTime: bus.querySelector('.dur').innerText.trim(),
+          rate: bus.querySelector('.seat-fare .f-19.f-bold').innerText.trim()
+        };
+      });
+    });
+    await browser.close();
+    return buses;
 }
 
 module.exports = router;

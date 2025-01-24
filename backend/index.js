@@ -3,6 +3,7 @@ const fs = require('fs');
 const app = express();
 const port = 3000;
 const { MongoClient, ServerApiVersion } = require('mongodb');
+const puppeteer = require('puppeteer');
 const uri = "mongodb+srv://admin:admin@ecovoyage.fwyxr.mongodb.net/?retryWrites=true&w=majority&appName=EcoVoyage";
 
 app.get('/', (req, res) => {
