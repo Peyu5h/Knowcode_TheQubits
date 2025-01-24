@@ -16,6 +16,7 @@ import SearchBoxPlan from '~/components/SearchBoxPlan';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as Location from 'expo-location';
 import { LucideLoader2, X } from 'lucide-react-native';
+import { usePlanStore } from '~/lib/store/usePlanStore';
 
 const formSchema = Yup.object().shape({
   fromLocation: Yup.object().shape({
@@ -54,6 +55,9 @@ export default function Plan() {
   const [locationPermission, setLocationPermission] = useState<boolean | null>(null);
   const [currentLocation, setCurrentLocation] = useState<string>('');
   const [hasFromLocation, setHasFromLocation] = useState(false);
+  const MAPBOX_ACCESS_TOKEN =
+    'pk.eyJ1IjoicGV5dTVoIiwiYSI6ImNtNG9mMms2NjA5NXQyanF6aWFoamlneHAifQ.5dT1m_VXoPx77m_nUAc6VQ';
+  const { updatePlanDetails } = usePlanStore();
 
   const formik = useFormik({
     initialValues: {
@@ -83,15 +87,36 @@ export default function Plan() {
       tripType: Yup.string().oneOf(['oneWay', 'roundTrip']).required(),
     }),
     onSubmit: (values) => {
+      // Store the destination in global state
+      updatePlanDetails({
+        currentLocation: {
+          latitude: values.toLocation.lat,
+          longitude: values.toLocation.lng,
+        },
+        name: values.toLocation.name,
+      });
+
+      const fromLocationString = JSON.stringify({
+        lat: values.fromLocation.lat,
+        lng: values.fromLocation.lng,
+        name: values.fromLocation.name,
+      });
+
+      const toLocationString = JSON.stringify({
+        lat: values.toLocation.lat,
+        lng: values.toLocation.lng,
+        name: values.toLocation.name,
+      });
+
       router.push({
-        pathname: '/(tabs)/(user)/plan/travel',
+        pathname: '/(tabs)/(user)/plan/attraction',
         params: {
-          fromLocation: values.fromLocation.name,
-          toLocation: values.toLocation.name,
+          fromLocation: fromLocationString,
+          toLocation: toLocationString,
           startDate: values.startDate.toISOString(),
           endDate: values.endDate.toISOString(),
-          passengers: values.passengers,
-          class: values.class,
+          passengers: values.passengers.toString(),
+          travelClass: values.class,
           tripType: activeTab,
         },
       });
@@ -170,7 +195,7 @@ export default function Plan() {
       try {
         const location = await Location.getCurrentPositionAsync({});
         const response = await fetch(
-          `https://api.mapbox.com/geocoding/v5/mapbox.places/${location.coords.longitude},${location.coords.latitude}.json?access_token=pk.eyJ1IjoicGV5dTVoIiwiYSI6ImNtNG9mMms2NjA5NXQyanF6aWFoamlneHAifQ.5dT1m_VXoPx77m_nUAc6VQ`
+          `https://api.mapbox.com/geocoding/v5/mapbox.places/${location.coords.longitude},${location.coords.latitude}.json?access_token=${MAPBOX_ACCESS_TOKEN}`
         );
         const data = await response.json();
         const locationName = data.features[0]?.place_name || '';

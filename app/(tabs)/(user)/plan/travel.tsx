@@ -1,5 +1,5 @@
-import { View, ScrollView } from 'react-native';
-import React, { useState } from 'react';
+import { View, ScrollView, ActivityIndicator } from 'react-native';
+import React, { useState, useEffect } from 'react';
 import { Text } from '~/components/ui/text';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { getAllTransportData } from '~/lib/dummyData';
@@ -9,6 +9,7 @@ import BusCard from '~/components/travelCards/BusCard';
 import CarCard from '~/components/travelCards/CarCard';
 import { Button } from '~/components/ui/button';
 import { ArrowLeft } from 'lucide-react-native';
+import api from '~/lib/api';
 
 const Travel = () => {
   const router = useRouter();
@@ -23,8 +24,36 @@ const Travel = () => {
     class: travelClass,
   } = params;
   const [selectedTransport, setSelectedTransport] = useState<string | null>(null);
+  const [flights, setFlights] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const { flights, trains, buses, cars } = getAllTransportData();
+  const { flights: dummyFlights, trains, buses, cars } = getAllTransportData();
+
+  useEffect(() => {
+    const fetchFlights = async () => {
+      try {
+        const response = await api.post('transport/find', {
+          class: params.class,
+          endDate: params.endDate,
+          fromLocation: JSON.parse(params.fromLocation as string),
+          toLocation: JSON.parse(params.toLocation as string),
+          passengers: Number(params.passengers),
+          startDate: params.startDate,
+          tripType: params.tripType,
+        });
+
+        if (response.success) {
+          setFlights(response.result as any);
+        }
+      } catch (error) {
+        console.error('Error fetching flights:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchFlights();
+  }, [params]);
 
   const handleSelect = (type: string, id: number) => {
     setSelectedTransport(`${type}-${id}`);
@@ -73,15 +102,30 @@ const Travel = () => {
 
       <ScrollView style={{ paddingTop: 80 }} className="flex-1 p-4 ">
         <Text className="text-lg font-semibold mb-2">Flights</Text>
-        {flights.map((flight, index) => (
-          // @ts-ignore
-          <FlightCard
-            key={`flight-${index}`}
-            {...flight}
-            isSelected={selectedTransport === `flight-${index}`}
-            onSelect={(isSelected) => handleSelect('flight', index)}
-          />
-        ))}
+        {/* {isLoading ? (
+          <ActivityIndicator size="large" className="mt-4" />
+        ) : (
+          flights.map((flight, index) => (
+            <FlightCard
+              key={`flight-${index}`}
+              from={params.fromLocation.name}
+              to={params.toLocation.name}
+              date={params.startDate}
+              price_inr={parseInt(flight.price.replace(/[^\d]/g, ''))}
+              airline={flight.airlineName}
+              flight_number={`${flight.sourceAirport}-${flight.destinationAirport}`}
+              duration={flight.journeyTime}
+              eco={false}
+              co2="0"
+              isSelected={selectedTransport === `flight-${index}`}
+              onSelect={() => handleSelect('flight', index)}
+              departureTime={flight.departureTime}
+              arrivalTime={flight.arrivalTime}
+              stops={flight.stops}
+              airlineLogo={flight.airlineLogo}
+            />
+          ))
+        )} */}
 
         <Text className="text-lg font-semibold mb-2 mt-6">Trains</Text>
         {trains.map((train, index) => (
