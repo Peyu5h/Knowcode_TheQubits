@@ -9,6 +9,8 @@ export default function NotFoundScreen() {
       return <Redirect href="/(tabs)/(hotel)/hotel" />;
     case 'driver':
       return <Redirect href="/(tabs)/(driver)/driver" />;
+    case 'regular':
+      return <Redirect href="/(tabs)/(user)" />;
     default:
       return <Redirect href="/(tabs)/(user)" />;
   }

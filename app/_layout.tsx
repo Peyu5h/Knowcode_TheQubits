@@ -105,9 +105,16 @@ export default function RootLayout() {
     <ToastProvider>
       <GestureHandlerRootView>
         <AuthContext.Provider value={authContext}>
-          {/* <StatusBar style={isDarkColorScheme ? 'light' : 'dark'} /> */}
+          <StatusBar barStyle="light-content" />
           <ReactQueryProvider>
-            <Stack screenOptions={{ headerShown: false, statusBarHidden: false }}>
+            <Stack
+              screenOptions={{
+                headerShown: false,
+                statusBarHidden: false,
+                statusBarStyle: 'light',
+                statusBarBackgroundColor: '#0c0a09',
+              }}
+            >
               <Stack.Screen
                 name="(auth)"
                 options={{
@@ -121,10 +128,10 @@ export default function RootLayout() {
                 }}
               />
             </Stack>
-            <PortalHost />
           </ReactQueryProvider>
         </AuthContext.Provider>
       </GestureHandlerRootView>
+      <PortalHost />
     </ToastProvider>
   );
 }
