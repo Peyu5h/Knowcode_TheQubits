@@ -100,7 +100,7 @@ function formatDate(isoString) {
   
 
   async function scrapeFlights(url) {
-    const browser = await puppeteer.launch({ headless: true });
+    const browser = await puppeteer.launch({ headless: "new" });
     const page = await browser.newPage();
     await page.goto(url, { waitUntil: "domcontentloaded" });
     await page.waitForSelector(".intl-grid-template");
