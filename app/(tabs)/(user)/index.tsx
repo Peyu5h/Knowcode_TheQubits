@@ -19,6 +19,7 @@ import { cn } from '~/lib/utils';
 import { PortalHost } from '@rn-primitives/portal';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '~/components/ui/hover-card';
 import { Skeleton } from '~/components/ui/skeleton';
+import { usePlanStore } from '~/lib/store/usePlanStore';
 
 const MAPBOX_ACCESS_TOKEN =
   'pk.eyJ1IjoicGV5dTVoIiwiYSI6ImNtNG9mMms2NjA5NXQyanF6aWFoamlneHAifQ.5dT1m_VXoPx77m_nUAc6VQ';
@@ -118,6 +119,9 @@ export default function Index() {
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+
+  const user = usePlanStore((state) => state.user);
+  console.log('user', user);
 
   const handleLocationSelect = (lat: number, lng: number, attractions?: any[], query?: string) => {
     setIsLoading(true);
@@ -234,7 +238,7 @@ export default function Index() {
         <View style={{ marginTop: 220 }} className="p-4">
           <View className="flex-row justify-between items-center">
             <View>
-              <Text className="text-white/80">Good Morning Piyush</Text>
+              <Text className="text-white/80">Good Morning {user?.name}</Text>
               <Text className="text-2xl font-bold text-white">Start new adventure</Text>
             </View>
             <HoverCard>

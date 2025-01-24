@@ -44,6 +44,8 @@ const Hotel = () => {
             <ArrowLeft color="white" size={20} />
           </Button>
 
+          <Text className="text-white text-xl font-semibold">Available Hotels</Text>
+
           <Button
             onPress={() => {
               router.push('/(tabs)/(user)/plan/attraction');
@@ -54,8 +56,8 @@ const Hotel = () => {
         </View>
       </View>
 
-      <ScrollView style={{ paddingTop: 80 }} className="flex-1 p-4">
-        <Text className="text-2xl font-bold mb-4">Hotels near Delhi</Text>
+      <ScrollView style={{ paddingTop: 90 }} className="flex-1 p-4">
+        {/* <Text className="text-2xl font-bold mb-4">Hotels near Delhi</Text> */}
 
         <View style={{ marginBottom: 150 }} className="space-y-4">
           {dummyHotels.map((hotel) => (

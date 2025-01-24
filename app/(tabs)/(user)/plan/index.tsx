@@ -369,21 +369,6 @@ export default function Plan() {
             <Text className="mt-2">Searching for flights...</Text>
           </View>
         )}
-
-        {/* Search Results */}
-        {searchResults.length > 0 && (
-          <View className="mt-4">
-            <Text className="text-xl mb-2">Available Flights</Text>
-            {searchResults.map((flight) => (
-              <View key={flight.id} className="p-4 bg-card rounded-lg mb-2">
-                <Text className="font-bold">{flight.airline}</Text>
-                <Text>
-                  {flight.price} - {flight.duration}
-                </Text>
-              </View>
-            ))}
-          </View>
-        )}
       </View>
     </ScrollView>
   );
