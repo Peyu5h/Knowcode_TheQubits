@@ -19,6 +19,8 @@ app.get('/test', (req, res) => {
 
 app.use('/user', require('./routes/user'));
 app.use('/transport', require('./routes/transport'));
+app.use('/accomodation', require('./routes/accomodation'));
+app.use('/attractions', require('./routes/attractions'));
 
 app.listen(port, async () => {
   /*const client = new MongoClient(uri, {
@@ -29,24 +31,19 @@ app.listen(port, async () => {
               }
           });
           const db = client.db("ecovoyage");
-  const coll = db.collection("railways");
-  const rawData = fs.readFileSync('stations.json');
-  const features = JSON.parse(rawData).features;
-  const transformed = features.map(feature => {
-    if (feature.geometry && feature.properties.code && feature.properties.name) {
-      return {
-        name: feature.properties.name,
-        state: feature.properties.state,
-        code: feature.properties.code,
-        location: {
-            type: "Point",
-            coordinates: feature.geometry.coordinates
-        }
-      };
+  const coll = db.collection("cities");
+  const rawData = fs.readFileSync('cities.json');
+  const json = JSON.parse(rawData);
+  const transformed = json.map(location => ({
+    name: location.name,
+    location: {
+        type: 'Point',
+        coordinates: [
+            parseFloat(location.longitude),
+            parseFloat(location.latitude)
+        ]
     }
-  });
-  //console.log(transformed);
+}));
   await coll.insertMany(transformed);*/
-  //await scrapeTrains();
     console.log(`Server started at http://localhost:${port}`);
 })

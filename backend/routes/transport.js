@@ -86,9 +86,11 @@ async function lookUpFlights(req) {
             $limit: 3,
         }
     ]).toArray();
+    console.log(result);
+    console.log(result2);
     const fuse = new Fuse(result2, {
         keys: ['name'],
-        threshold: 0.3,
+        threshold: 0.5,
         includeScore: true
     });
     const finalResults = fuse.search(toLocation.name)
@@ -100,7 +102,9 @@ async function lookUpFlights(req) {
         return b.matchScore - a.matchScore || a.distance - b.distance;
     })
         .slice(0, 3);
-    const flights = await scrapeFlights(`https://www.cleartrip.com/flights/international/results?adults=${passengers}&childs=0&infants=0&class=Economy&depart_date=${formatDate(startDate)}&from=${result[0].IATA}&to=${finalResults[0].IATA}`);
+    console.log(finalResults);
+    console.log(`https://www.cleartrip.com/flights/international/results?adults=${passengers}&childs=0&infants=0&class=Economy&depart_date=${formatDate(startDate)}&from=${result[0].IATA}&to=${finalResults[0].IATA}`);
+    const flights = await scrapeFlights(`https://www.cleartrip.com/flights/international/results?adults=${passengers}&childs=0&infants=0&class=Economy&depart_date=${formatDate(startDate)}&from=${result[0].IATA}&to=${finalResults[0].IATA}`, result[0].country === finalResults[0].country ? true : false);
     if (flights != null && flights != undefined && flights.length > 0) {
         flightsArr = flights.slice(0, 5);
     } else {
@@ -208,8 +212,8 @@ function formatDate(isoString) {
 }
   
 
-async function scrapeFlights(url) {
-    const browser = await puppeteer.launch({ headless: "new", args: [
+async function scrapeFlights(url, domestic) {
+    const browser = await puppeteer.launch({ headless: false, args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
         '--disable-dev-shm-usage',
@@ -221,56 +225,83 @@ async function scrapeFlights(url) {
     const page = await browser.newPage();
     await page.goto(url, { waitUntil: "domcontentloaded" });
     try {
-        await page.waitForSelector(".intl-grid-template", {timeout: 8000});
-        const gridExists = await page.$('.intl-grid-template').catch(() => null);
-        if (!gridExists) return null;
-    
-        const flights = await page.evaluate(() => {
-            const flightBlocks = Array.from(document.querySelectorAll(".intl-grid-template")).slice(0, 5);
-            return flightBlocks.map(block => {
-                const airlineLogo = block.querySelector("img[alt]")?.src || "";
-                const airlineName = block.querySelector(".c-neutral-900.fs-1.fw-500")?.innerText.trim() || "";
-    
-                const departureElement = block.querySelector(".ms-grid-column-1 .fs-6.fw-500");
-                const departureTimeMatch = departureElement?.innerText.match(/\d{2}:\d{2}/);
-                const departureTime = departureTimeMatch ? departureTimeMatch[0] : "";
-    
-                const arrivalElement = block.querySelector(".ms-grid-column-2.ms-grid-row-1 .fs-6.fw-500");
-                const arrivalText = arrivalElement?.innerText.trim() || "";
-                const [arrivalTime, arrivalDate] = arrivalText.split("\n");
-    
-                const sourceAirport = block.querySelector("p.m-0.fs-2.c-neutral-700 span.c-neutral-500.fw-500.fs-2")?.innerText.trim() || "";
-                const destinationAirport = block.querySelector("p.m-0.fs-2.c-neutral-700 div:nth-child(2) span.c-neutral-500.fw-500.fs-2")?.innerText.trim() || "";
-    
-                const journeyTime = block.querySelector(".ms-grid-column-3 .fs-3.lh-28.fw-500")?.innerText.trim() || "";
-    
-                const stopsElement = block.querySelector('[id*="stopsCallout2"]');
-                const stopsText = stopsElement?.innerText.trim() || "";
-                const stops = stopsText.includes("non-stop") ? 0 : parseInt(stopsText.match(/\d+/)?.[0] || 0);
-    
-                const priceElement = block.querySelector(".fs-6.fw-600.c-neutral-900");
-                const price = priceElement?.innerText.trim() || "";
-    
-                return {
-                    airlineLogo,
-                    airlineName,
-                    departureTime,
-                    arrivalTime: arrivalTime || "",
-                    arrivalDate: arrivalDate || "",
-                    sourceAirport,
-                    destinationAirport,
-                    journeyTime,
-                    stops,
-                    price
-                };
+        var flights = [];
+        if (domestic) {
+            await page.waitForSelector('div[data-testid="tupple"]', {timeout: 20000});
+
+            flights = await page.$$eval('div[data-testid="tupple"]', (blocks) => {
+                return blocks.map(block => {
+                  // Helper function with safe element handling
+                  const getText = (selector) => 
+                    block.querySelector(selector)?.textContent?.trim() || 'N/A';
+              
+                  // Extract flight details
+                  return {
+                    airlineLogo: block.querySelector('img[alt]')?.src || '',
+                    airlineName: getText('p.fw-500.fs-2.c-neutral-900'),
+                    departureTime: getText('.ms-grid-column-1 .fs-5.fw-400')?.match(/\d{2}:\d{2}/)?.[0] || '',
+                    arrivalTime: getText('.ms-grid-column-1.ms-grid-row-1 .fs-5.fw-400')?.match(/\d{2}:\d{2}/)?.[0] || '',
+                    arrivalDate: getText('.ms-grid-row-2 .fs-2.c-neutral-400'),
+                    sourceAirport: getText('.ms-grid-column-1 .fs-2.c-neutral-400'),
+                    destinationAirport: getText('.ms-grid-column-3 .fs-2.c-neutral-400'),
+                    journeyTime: getText('.ms-grid-column-3 .fs-2.fw-400'),
+                    stops: parseInt(getText('[id*="stopsCallout2"]')?.match(/\d+/)?.[0] || 0),
+                    price: getText('.fs-5.fw-700.c-neutral-900')?.replace('₹', '') || '0'
+                  };
+                });
+              });
+        } else {
+            await page.waitForSelector(".intl-grid-template", {timeout: 20000});
+            const gridExists = await page.$('.intl-grid-template').catch(() => null);
+            if (!gridExists) return null;
+        
+            const flights = await page.evaluate(() => {
+                const flightBlocks = Array.from(document.querySelectorAll(".intl-grid-template")).slice(0, 5);
+                return flightBlocks.map(block => {
+                    const airlineLogo = block.querySelector("img[alt]")?.src || "";
+                    const airlineName = block.querySelector(".c-neutral-900.fs-1.fw-500")?.innerText.trim() || "";
+        
+                    const departureElement = block.querySelector(".ms-grid-column-1 .fs-6.fw-500");
+                    const departureTimeMatch = departureElement?.innerText.match(/\d{2}:\d{2}/);
+                    const departureTime = departureTimeMatch ? departureTimeMatch[0] : "";
+        
+                    const arrivalElement = block.querySelector(".ms-grid-column-2.ms-grid-row-1 .fs-6.fw-500");
+                    const arrivalText = arrivalElement?.innerText.trim() || "";
+                    const [arrivalTime, arrivalDate] = arrivalText.split("\n");
+        
+                    const sourceAirport = block.querySelector("p.m-0.fs-2.c-neutral-700 span.c-neutral-500.fw-500.fs-2")?.innerText.trim() || "";
+                    const destinationAirport = block.querySelector("p.m-0.fs-2.c-neutral-700 div:nth-child(2) span.c-neutral-500.fw-500.fs-2")?.innerText.trim() || "";
+        
+                    const journeyTime = block.querySelector(".ms-grid-column-3 .fs-3.lh-28.fw-500")?.innerText.trim() || "";
+        
+                    const stopsElement = block.querySelector('[id*="stopsCallout2"]');
+                    const stopsText = stopsElement?.innerText.trim() || "";
+                    const stops = stopsText.includes("non-stop") ? 0 : parseInt(stopsText.match(/\d+/)?.[0] || 0);
+        
+                    const priceElement = block.querySelector(".fs-6.fw-600.c-neutral-900");
+                    const price = priceElement?.innerText.trim() || "";
+        
+                    return {
+                        airlineLogo,
+                        airlineName,
+                        departureTime,
+                        arrivalTime: arrivalTime || "",
+                        arrivalDate: arrivalDate || "",
+                        sourceAirport,
+                        destinationAirport,
+                        journeyTime,
+                        stops,
+                        price
+                    };
+                });
             });
-        });
+        }
         return flights;
     } catch (error) {
         console.error(error);
         return null;
     } finally {
-        await browser.close();
+        //await browser.close();
     }
 }
 
@@ -373,7 +404,7 @@ async function scrapeBuses(from, to, date) {
 }*/
 
 async function scrapeTrains(from, to, date) {
-    const browser = await puppeteer.launch({ headless: "new", args: [
+    const browser = await puppeteer.launch({ headless: false, args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
         '--disable-dev-shm-usage',
@@ -391,7 +422,7 @@ async function scrapeTrains(from, to, date) {
     console.log(`https://www.redbus.in/railways/search?src=${from}&dst=${to}&doj=${date}&fcOpted=false`);
   await page.goto(`https://www.redbus.in/railways/search?src=${from}&dst=${to}&doj=${date}&fcOpted=false`, { waitUntil: 'networkidle2' });
   
-  await page.waitForSelector('.search_tupple_wrapper', { timeout: 8000 });
+  await page.waitForSelector('.search_tupple_wrapper', { timeout: 15000 });
 
   const trains = await page.$$eval('.search_tupple_wrapper', (elements) => {
     return elements.map(el => {
