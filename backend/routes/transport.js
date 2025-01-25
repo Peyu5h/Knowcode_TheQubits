@@ -1,7 +1,10 @@
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const uri = "mongodb+srv://mihir:mihir@ecovoyage.fwyxr.mongodb.net/?retryWrites=true&w=majority&appName=EcoVoyage";
 const express = require('express');
-const puppeteer = require('puppeteer');
+const puppeteer = require('puppeteer-extra');
+const AdblockerPlugin = require('puppeteer-extra-plugin-adblocker');
+const StealthPlugin = require('puppeteer-extra-plugin-stealth');
+puppeteer.use(StealthPlugin());
 const Fuse = require('fuse.js');
 const axios = require('axios');
 const router = express.Router();
@@ -97,31 +100,11 @@ async function lookUpFlights(req) {
         return b.matchScore - a.matchScore || a.distance - b.distance;
     })
         .slice(0, 3);
-    if (result.length > 0 && finalResults.length > 0) {
-        const flights = await scrapeFlights(`https://www.cleartrip.com/flights/international/results?adults=${passengers}&childs=0&infants=0&class=Economy&depart_date=${formatDate(startDate)}&from=${result[0].IATA}&to=${finalResults[0].IATA}`);
-        console.log("im here");
-        console.log(flights);
-        if (flights == null) {
-            flightsArr = null;
-            return;
-        } else {
-            const coord1 = result[0].location.coordinates;
-            const coord2 = finalResults[0].location.coordinates;
-            const dist = haversine(coord1[0], coord1[1], coord2[0], coord2[0]);
-            const response = await axios.post('http://143.110.187.139/predict', {
-                "airline_iata": "SG",
-                "iata_departure": flights[0].sourceAirport,
-                "iata_arrival": flights[0].destinationAirport,
-                "distance_km": parseFloat(dist.toFixed(2)),
-                "domestic": result[0].country === finalResults[0].country ? 1 : 0,
-            });
-        }
-        await client.close();
-        /*res.status(200).json({
-            success: true,
-            message: 'Find successful',
-            result: flights,
-        });*/
+    const flights = await scrapeFlights(`https://www.cleartrip.com/flights/international/results?adults=${passengers}&childs=0&infants=0&class=Economy&depart_date=${formatDate(startDate)}&from=${result[0].IATA}&to=${finalResults[0].IATA}`);
+    if (flights != null && flights != undefined && flights.length > 0) {
+        flightsArr = flights.slice(0, 5);
+    } else {
+        flightsArr = null;
     }
 }
 
@@ -226,7 +209,7 @@ function formatDate(isoString) {
   
 
 async function scrapeFlights(url) {
-    const browser = await puppeteer.launch({ headless: "new",   args: [
+    const browser = await puppeteer.launch({ headless: "new", args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
         '--disable-dev-shm-usage',
@@ -236,69 +219,59 @@ async function scrapeFlights(url) {
         '--blink-settings=imagesEnabled=false' 
       ], });
     const page = await browser.newPage();
+    await page.goto(url, { waitUntil: "domcontentloaded" });
     try {
-        await page.goto(url, { waitUntil: "domcontentloaded", timeout: 5000 });
-        await page.waitForSelector(".intl-grid-template", { timeout: 5000 });
-    } catch (e) {
-        console.error(e);
-    }
-        
-        const elementExists = await page.$('.intl-grid-template').then(Boolean);
-
-        if (!elementExists) {
-            await browser.close();
-            return null;
-    }
+        await page.waitForSelector(".intl-grid-template", {timeout: 8000});
+        const gridExists = await page.$('.intl-grid-template').catch(() => null);
+        if (!gridExists) return null;
     
-    console.log('before flights');
-        
         const flights = await page.evaluate(() => {
             const flightBlocks = Array.from(document.querySelectorAll(".intl-grid-template")).slice(0, 5);
-            if (flightBlocks > 0) {
-                return flightBlocks.map(block => {
-                    // Always scope selectors to the block element
-                    const airlineLogo = block.querySelector("img[alt]")?.src || "";
-                    const airlineName = block.querySelector(".c-neutral-900.fs-1.fw-500")?.innerText.trim() || "";
-                    
-                    const departureElement = block.querySelector(".ms-grid-column-1 .fs-6.fw-500");
-                    const departureTimeMatch = departureElement?.innerText.match(/\d{2}:\d{2}/);
-                    const departureTime = departureTimeMatch ? departureTimeMatch[0] : "";
-                    
-                    const arrivalElement = block.querySelector(".ms-grid-column-2.ms-grid-row-1 .fs-6.fw-500");
-                    const arrivalText = arrivalElement?.innerText.trim() || "";
-                    const [arrivalTime, arrivalDate] = arrivalText.split("\n");
-                    
-                    const sourceAirport = block.querySelector("p.m-0.fs-2.c-neutral-700 span.c-neutral-500.fw-500.fs-2")?.innerText.trim() || "";
-                    const destinationAirport = block.querySelector("p.m-0.fs-2.c-neutral-700 div:nth-child(2) span.c-neutral-500.fw-500.fs-2")?.innerText.trim() || "";
-                    
-                    const journeyTime = block.querySelector(".ms-grid-column-3 .fs-3.lh-28.fw-500")?.innerText.trim() || "";
-                    
-                    const stopsElement = block.querySelector('[id*="stopsCallout2"]');
-                    const stopsText = stopsElement?.innerText.trim() || "";
-                    const stops = stopsText.includes("non-stop") ? 0 : parseInt(stopsText.match(/\d+/)?.[0] || 0);
-                    
-                    const priceElement = block.querySelector(".fs-6.fw-600.c-neutral-900");
-                    const price = priceElement?.innerText.trim() || "";
-        
-                    return {
-                        airlineLogo,
-                        airlineName,
-                        departureTime,
-                        arrivalTime: arrivalTime || "",
-                        arrivalDate: arrivalDate || "",
-                        sourceAirport,
-                        destinationAirport,
-                        journeyTime,
-                        stops,
-                        price
-                    };
-                });   
-            } else {
-                return null;
-            }
+            return flightBlocks.map(block => {
+                const airlineLogo = block.querySelector("img[alt]")?.src || "";
+                const airlineName = block.querySelector(".c-neutral-900.fs-1.fw-500")?.innerText.trim() || "";
+    
+                const departureElement = block.querySelector(".ms-grid-column-1 .fs-6.fw-500");
+                const departureTimeMatch = departureElement?.innerText.match(/\d{2}:\d{2}/);
+                const departureTime = departureTimeMatch ? departureTimeMatch[0] : "";
+    
+                const arrivalElement = block.querySelector(".ms-grid-column-2.ms-grid-row-1 .fs-6.fw-500");
+                const arrivalText = arrivalElement?.innerText.trim() || "";
+                const [arrivalTime, arrivalDate] = arrivalText.split("\n");
+    
+                const sourceAirport = block.querySelector("p.m-0.fs-2.c-neutral-700 span.c-neutral-500.fw-500.fs-2")?.innerText.trim() || "";
+                const destinationAirport = block.querySelector("p.m-0.fs-2.c-neutral-700 div:nth-child(2) span.c-neutral-500.fw-500.fs-2")?.innerText.trim() || "";
+    
+                const journeyTime = block.querySelector(".ms-grid-column-3 .fs-3.lh-28.fw-500")?.innerText.trim() || "";
+    
+                const stopsElement = block.querySelector('[id*="stopsCallout2"]');
+                const stopsText = stopsElement?.innerText.trim() || "";
+                const stops = stopsText.includes("non-stop") ? 0 : parseInt(stopsText.match(/\d+/)?.[0] || 0);
+    
+                const priceElement = block.querySelector(".fs-6.fw-600.c-neutral-900");
+                const price = priceElement?.innerText.trim() || "";
+    
+                return {
+                    airlineLogo,
+                    airlineName,
+                    departureTime,
+                    arrivalTime: arrivalTime || "",
+                    arrivalDate: arrivalDate || "",
+                    sourceAirport,
+                    destinationAirport,
+                    journeyTime,
+                    stops,
+                    price
+                };
+            });
         });
-    await browser.close();
-    return flights ?? null;
+        return flights;
+    } catch (error) {
+        console.error(error);
+        return null;
+    } finally {
+        await browser.close();
+    }
 }
 
 async function scrapeBuses(from, to, date) {
@@ -418,7 +391,7 @@ async function scrapeTrains(from, to, date) {
     console.log(`https://www.redbus.in/railways/search?src=${from}&dst=${to}&doj=${date}&fcOpted=false`);
   await page.goto(`https://www.redbus.in/railways/search?src=${from}&dst=${to}&doj=${date}&fcOpted=false`, { waitUntil: 'networkidle2' });
   
-  await page.waitForSelector('.search_tupple_wrapper');
+  await page.waitForSelector('.search_tupple_wrapper', { timeout: 8000 });
 
   const trains = await page.$$eval('.search_tupple_wrapper', (elements) => {
     return elements.map(el => {
