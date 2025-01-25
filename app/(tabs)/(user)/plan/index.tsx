@@ -87,7 +87,6 @@ export default function Plan() {
       tripType: Yup.string().oneOf(['oneWay', 'roundTrip']).required(),
     }),
     onSubmit: (values) => {
-      // Store the destination in global state
       updatePlanDetails({
         currentLocation: {
           latitude: values.toLocation.lat,
@@ -109,7 +108,7 @@ export default function Plan() {
       });
 
       router.push({
-        pathname: '/(tabs)/(user)/plan/attraction',
+        pathname: '/(tabs)/(user)/plan/travel',
         params: {
           fromLocation: fromLocationString,
           toLocation: toLocationString,

@@ -10,6 +10,17 @@ interface TrainCardProps extends TransportData {
   co2: string;
 }
 
+const formatTime = (time: string) => {
+  if (!time) return '';
+  const [timeStr, meridiem] = time.split(/(?=[AP]M)/);
+  if (meridiem) return time;
+  const [hours, minutes] = timeStr.split(':');
+  const hour = parseInt(hours);
+  const ampm = hour >= 12 ? 'PM' : 'AM';
+  const formattedHour = hour % 12 || 12;
+  return `${formattedHour}:${minutes} ${ampm}`;
+};
+
 const TrainCard = ({
   from,
   to,
@@ -23,6 +34,8 @@ const TrainCard = ({
   isSelected,
   onSelect,
 }: TrainCardProps) => {
+  const [departureTime, arrivalTime] = duration.split(' - ');
+
   return (
     <TouchableOpacity
       onPress={() => onSelect(!isSelected)}
@@ -43,11 +56,21 @@ const TrainCard = ({
       </View>
 
       <View className="flex-row justify-between items-center">
-        <View className="flex-row gap-2 items-center">
-          <Clock color="white" size={16} className="mr-2" />
-          <Text>{duration}</Text>
+        <View className="flex-row items-center gap-4">
+          <View className="items-center">
+            <Text className="text-lg font-medium">{formatTime(departureTime)}</Text>
+            <Text className="text-xs text-muted-foreground">Departure</Text>
+          </View>
+          <View className="flex-row items-center gap-1">
+            <View className="h-[1px] w-12 bg-muted-foreground" />
+            <Train size={16} color="white" />
+            <View className="h-[1px] w-12 bg-muted-foreground" />
+          </View>
+          <View className="items-center">
+            <Text className="text-lg font-medium">{formatTime(arrivalTime)}</Text>
+            <Text className="text-xs text-muted-foreground">Arrival</Text>
+          </View>
         </View>
-        <Text className="font-semibold">CO2: {co2}kg</Text>
       </View>
 
       <View className="mt-2 flex-row justify-between items-center">
